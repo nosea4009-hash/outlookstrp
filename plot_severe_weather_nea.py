@@ -111,9 +111,7 @@ LEVELS = {
     "tempestades": ("Tempestades",  "#bceabf", "#bce9c2"),
     "nivel1":      ("Nivel 1",      "#a5a897", "#ffff00"),
     "nivel2":      ("Nivel 2",      "#e09000", "#fea500"),
-    # OJO: no me pasaste el color de relleno de Nivel 3 (solo el borde).
-    # Dejo un rojo solido como placeholder -> confirmame el HEX real.
-    "nivel3":      ("Nivel 3",      "#db0001", "#ee0000"),
+    "nivel3":      ("Nivel 3",      "#db0001", "#e94b4b"),
     "nivel4":      ("Nivel 4",      "#cc02d1", "#f300f0"),
 }
 # Orden de dibujo (de mas grande/externo a mas chico/interno)
