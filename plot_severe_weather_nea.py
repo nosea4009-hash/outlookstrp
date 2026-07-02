@@ -85,10 +85,13 @@ NIVEL_FIELD = "level"
 NIVEL_ALIASES = {
     "TSTM": "tempestades",
     "MRGL": "nivel1",
-    # "SLGT": "nivel2",
-    # "ENH":  "nivel2",
-    # "MDT":  "nivel3",
-    # "HIGH": "nivel4",
+    "SLGT": "nivel2",
+    "ENH":  "nivel3",
+    "MDT":  "nivel4",   # nivel mas alto usado (rosa/magenta)
+    # "HIGH": "nivel4", # el SPC real tiene un nivel mas (HIGH) que no
+                         # se usa aca porque el esquema solo tiene 4
+                         # niveles + tempestades. Descomentar y ajustar
+                         # si en el futuro se agrega un 5to nivel.
 }
 
 # --- Titulo ------------------------------------------------------------
