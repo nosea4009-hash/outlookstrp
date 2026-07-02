@@ -407,6 +407,31 @@ def build_plot(gdf_severity):
             zorder=10 + LEVEL_ORDER.index(nivel_key),
         )
 
+    # --- Redibujar fronteras POR ENCIMA de los poligonos de severidad -
+    # Los poligonos de severidad se dibujan con zorder mas alto que las
+    # fronteras (para que el relleno se vea), pero eso las tapa donde
+    # se superponen. Las volvemos a dibujar aca (solo lineas, sin
+    # relleno) con un zorder aun mayor, para que los limites
+    # provinciales/nacionales queden siempre visibles encima del color.
+    for rec in provinces_reader.records():
+        ax.add_geometries(
+            [rec.geometry],
+            crs=proj,
+            facecolor="none",
+            edgecolor="black",
+            linewidth=0.5,
+            zorder=16,
+        )
+    for rec in countries_reader.records():
+        ax.add_geometries(
+            [rec.geometry],
+            crs=proj,
+            facecolor="none",
+            edgecolor="black",
+            linewidth=0.9,
+            zorder=17,
+        )
+
     # --- Ciudades: circulo blanco + borde negro fino ------------------
     for name, lat, lon, dx, dy, ha in CITIES:
         if not (LON_MIN <= lon <= LON_MAX and LAT_MIN <= lat <= LAT_MAX):
