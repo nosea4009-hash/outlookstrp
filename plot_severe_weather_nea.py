@@ -70,8 +70,26 @@ from shapely.geometry import box
 # Poné aca la ruta real de tu archivo cuando lo tengas armado.
 GEOJSON_PATH = "severidad_nea.geojson"
 
-# Nombre del campo dentro de "properties" que indica el nivel
-NIVEL_FIELD = "nivel"
+# Nombre del campo dentro de "properties" que indica el nivel.
+# Tu GeoJSON actual usa "level" (con valores tipo SPC: TSTM, MRGL, etc.)
+NIVEL_FIELD = "level"
+
+# --- Alias / traduccion de valores -------------------------------------
+# Si tu GeoJSON usa codigos distintos a las claves internas del script
+# (tempestades, nivel1, nivel2, nivel3, nivel4), mapealos aca.
+# Si el dia de mañana tu GeoJSON ya usa directamente "nivel1", "nivel2",
+# etc., no pasa nada: el alias es transparente (ver _normalize_nivel).
+#
+# Agregá mas entradas a medida que definas Nivel 2/3/4 (ej: SLGT, ENH,
+# MDT, HIGH, o los nombres que decidas usar).
+NIVEL_ALIASES = {
+    "TSTM": "tempestades",
+    "MRGL": "nivel1",
+    # "SLGT": "nivel2",
+    # "ENH":  "nivel2",
+    # "MDT":  "nivel3",
+    # "HIGH": "nivel4",
+}
 
 # --- Titulo ------------------------------------------------------------
 TITLE_TEXT = "PREVISION DE TIEMPO SEVERO"
@@ -168,6 +186,18 @@ FONT_BOLD = _find_font(FONT_BOLD_CANDIDATES, "DejaVu Sans", "bold")
 # GEOJSON: carga obligatoria, el script NO corre sin esto
 # =====================================================================
 
+def _normalize_nivel(value):
+    """Traduce un valor crudo del GeoJSON (ej: 'TSTM', 'MRGL') a la
+    clave interna que usa el script (ej: 'tempestades', 'nivel1').
+
+    Si el valor ya es una clave interna valida (por ejemplo si en el
+    futuro tu GeoJSON usa directamente 'nivel1', 'nivel2', etc.), se
+    devuelve tal cual, sin necesidad de tocar NIVEL_ALIASES."""
+    if value in LEVELS:
+        return value
+    return NIVEL_ALIASES.get(value, value)
+
+
 def load_severity_geojson(path):
     """Carga el GeoJSON de poligonos de severidad. Si el archivo no
     existe, aborta la ejecucion del script con un mensaje claro
@@ -204,12 +234,26 @@ def load_severity_geojson(path):
     else:
         gdf = gdf.to_crs(epsg=4326)
 
-    valores_invalidos = set(gdf[NIVEL_FIELD].unique()) - set(LEVELS.keys())
+    # Traducimos los valores crudos (ej: "TSTM", "MRGL") a las claves
+    # internas del script (ej: "tempestades", "nivel1") usando
+    # NIVEL_ALIASES. Guardamos el resultado en una columna nueva para
+    # no pisar el dato original.
+    valores_originales = gdf[NIVEL_FIELD].unique().tolist()
+    gdf["_nivel_normalizado"] = gdf[NIVEL_FIELD].apply(_normalize_nivel)
+
+    valores_invalidos = set(gdf["_nivel_normalizado"].unique()) - set(LEVELS.keys())
     if valores_invalidos:
         print(
-            f"[AVISO] Se encontraron valores en '{NIVEL_FIELD}' que no "
-            f"coinciden con ningun nivel conocido y seran ignorados: "
-            f"{valores_invalidos}"
+            f"[AVISO] Estos valores de '{NIVEL_FIELD}' no coinciden con "
+            f"ningun nivel conocido (ni directamente ni via NIVEL_ALIASES) "
+            f"y sus poligonos NO se van a colorear: {valores_invalidos}\n"
+            f"        Valores originales en el archivo: {valores_originales}\n"
+            f"        Agregalos a NIVEL_ALIASES si corresponde."
+        )
+    else:
+        print(
+            f"[OK] Todos los valores de '{NIVEL_FIELD}' fueron "
+            f"reconocidos correctamente: {valores_originales}"
         )
 
     return gdf
@@ -350,7 +394,7 @@ def build_plot(gdf_severity):
         if nivel_key not in LEVELS:
             continue
         _, edge_color, fill_color = LEVELS[nivel_key]
-        subset = gdf_severity[gdf_severity[NIVEL_FIELD] == nivel_key]
+        subset = gdf_severity[gdf_severity["_nivel_normalizado"] == nivel_key]
         if subset.empty:
             continue
         ax.add_geometries(
