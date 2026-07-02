@@ -108,7 +108,7 @@ COLOR_WATER = "#dce6f0"          # oceano / rios / lagos
 
 LEVELS = {
     # clave interna : (etiqueta en leyenda, color de borde, color de relleno)
-    "tempestades": ("Tempestades",  "#bceabf", "#bce9c2"),
+    "tempestades": ("Tempestades",  "#2e7d32", "#bce9c2"),
     "nivel1":      ("Nivel 1",      "#a5a897", "#ffff00"),
     "nivel2":      ("Nivel 2",      "#e09000", "#fea500"),
     "nivel3":      ("Nivel 3",      "#db0001", "#e94b4b"),
