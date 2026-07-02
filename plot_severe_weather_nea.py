@@ -117,6 +117,18 @@ LEVELS = {
 # Orden de dibujo (de mas grande/externo a mas chico/interno)
 LEVEL_ORDER = ["tempestades", "nivel1", "nivel2", "nivel3", "nivel4"]
 
+# --- Grosor de borde por nivel ------------------------------------------
+# Nivel 2, 3 y 4 se dibujan con un borde mas grueso para resaltar
+# visualmente los niveles de mayor severidad. Ajustable a gusto.
+BORDER_LINEWIDTHS = {
+    "tempestades": 1.2,
+    "nivel1":      1.2,
+    "nivel2":      2.2,
+    "nivel3":      2.2,
+    "nivel4":      2.2,
+}
+DEFAULT_BORDER_LINEWIDTH = 1.2  # fallback si un nivel no esta en el dict de arriba
+
 # --- Ciudades a marcar --------------------------------------------------
 # Formato: (nombre, lat, lon, dx, dy, ha)
 #   dx, dy : desplazamiento del TEXTO respecto al marcador, en grados
@@ -398,12 +410,13 @@ def build_plot(gdf_severity):
         subset = gdf_severity[gdf_severity["_nivel_normalizado"] == nivel_key]
         if subset.empty:
             continue
+        border_width = BORDER_LINEWIDTHS.get(nivel_key, DEFAULT_BORDER_LINEWIDTH)
         ax.add_geometries(
             subset.geometry,
             crs=proj,
             facecolor=fill_color,
             edgecolor=edge_color,
-            linewidth=1.2,
+            linewidth=border_width,
             zorder=10 + LEVEL_ORDER.index(nivel_key),
         )
 
@@ -510,10 +523,12 @@ def build_plot(gdf_severity):
         if nivel_key not in LEVELS:
             continue
         label, edge_color, fill_color = LEVELS[nivel_key]
+        border_width = BORDER_LINEWIDTHS.get(nivel_key, DEFAULT_BORDER_LINEWIDTH)
         legend_ax.add_patch(
             mpatches.Rectangle(
                 (0.0, y0 - 0.06), 0.14, 0.10,
-                facecolor=fill_color, edgecolor=edge_color, linewidth=1.2,
+                facecolor=fill_color, edgecolor=edge_color,
+                linewidth=border_width,
                 transform=legend_ax.transAxes,
             )
         )
